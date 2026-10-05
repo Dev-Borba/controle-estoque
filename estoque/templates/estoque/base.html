@@ -1,0 +1,85 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Produtos{% endblock %} · Controle de Estoque</title>
+  <link rel="icon" href="{% static 'estoque/favicon.svg' %}" type="image/svg+xml">
+  <link rel="stylesheet" href="{% static 'estoque/styles.css' %}">
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+
+  <div class="app">
+    <aside class="sidebar">
+      <a class="brand"
+         href="{% url 'estoque:produto_listar' %}"
+         aria-label="Controle de Estoque — início">
+        <span class="brand-symbol" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"
+                  stroke="currentColor" stroke-width="1.6"/>
+            <path d="m4 7.5 8 4.5 8-4.5M12 12v9m-4-16 8 4.5"
+                  stroke="currentColor" stroke-width="1.6"/>
+          </svg>
+        </span>
+        <span>
+          Controle
+          <span class="brand-second">de Estoque</span>
+        </span>
+      </a>
+
+      <p class="nav-label">CATÁLOGO</p>
+
+      <nav aria-label="Menu principal">
+        <a class="nav-item"
+           href="{% url 'estoque:produto_listar' %}"
+           {% block nav_current %}{% endblock %}>
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect x="4" y="4" width="6" height="6" rx="1.3"
+                  stroke="currentColor" stroke-width="1.5"/>
+            <rect x="14" y="4" width="6" height="6" rx="1.3"
+                  stroke="currentColor" stroke-width="1.5"/>
+            <rect x="4" y="14" width="6" height="6" rx="1.3"
+                  stroke="currentColor" stroke-width="1.5"/>
+            <rect x="14" y="14" width="6" height="6" rx="1.3"
+                  stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+          Produtos
+        </a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <span class="status-dot" aria-hidden="true"></span>
+        Organização para o seu dia a dia
+      </div>
+    </aside>
+
+    <div class="main-shell">
+      <header class="topbar">
+        <span>Gestão do catálogo</span>
+        <span class="workspace-badge">Meu estoque</span>
+      </header>
+
+      <main id="conteudo" class="main">
+        {% if messages %}
+          <div class="messages" role="status">
+            {% for message in messages %}
+              <div class="message {{ message.tags }}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+      </main>
+
+      <footer class="footer">
+        Controle de Estoque · Produtos organizados, informações acessíveis.
+      </footer>
+    </div>
+  </div>
+</body>
+</html>

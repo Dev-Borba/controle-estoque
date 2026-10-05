@@ -1,0 +1,193 @@
+{% extends "estoque/base.html" %}
+
+{% block title %}Produtos{% endblock %}
+
+{% block nav_current %}aria-current="page"{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+  <div>
+    <p class="eyebrow">SEU CATÁLOGO</p>
+    <h1>Produtos</h1>
+    <p class="subtitle">
+      Organize os itens que fazem parte do seu estoque.
+    </p>
+  </div>
+
+  <a class="button button-primary"
+     href="{% url 'estoque:produto_criar' %}">
+    <span aria-hidden="true">+</span>
+    Novo produto
+  </a>
+</div>
+
+<div class="catalog-summary">
+  <div class="summary-icon" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none">
+      <path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"
+            stroke="currentColor" stroke-width="1.6"/>
+      <path d="m4 7.5 8 4.5 8-4.5M12 12v9"
+            stroke="currentColor" stroke-width="1.6"/>
+    </svg>
+  </div>
+
+  <div>
+    <strong>{{ total_produtos }}</strong>
+    <span>
+      produto{{ total_produtos|pluralize:"s" }}
+      cadastrado{{ total_produtos|pluralize:"s" }}
+    </span>
+  </div>
+
+  <p>
+    Mantenha os códigos e as informações dos seus produtos atualizados.
+  </p>
+</div>
+
+<section class="panel" aria-labelledby="lista-titulo">
+  <div class="panel-toolbar">
+    <div>
+      <h2 id="lista-titulo">Catálogo de produtos</h2>
+      <p>
+        {{ total_resultados }} resultado{{ total_resultados|pluralize:"s" }}
+        {% if busca %}para “{{ busca }}”{% endif %}
+      </p>
+    </div>
+
+    <form class="search" method="get">
+      <label class="sr-only" for="busca">Buscar produtos</label>
+
+      <input id="busca"
+             name="q"
+             type="search"
+             value="{{ busca }}"
+             maxlength="100"
+             placeholder="Nome, código ou categoria">
+
+      <button class="button button-secondary" type="submit">
+        Buscar
+      </button>
+
+      {% if busca %}
+        <a class="text-link"
+           href="{% url 'estoque:produto_listar' %}">
+          Limpar
+        </a>
+      {% endif %}
+    </form>
+  </div>
+
+  {% if pagina.object_list %}
+    <div class="table-scroll"
+         role="region"
+         aria-label="Tabela de produtos"
+         tabindex="0">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Produto</th>
+            <th scope="col">Categoria</th>
+            <th scope="col">Unidade</th>
+            <th scope="col" class="number">Preço</th>
+            <th scope="col" class="number">Estoque mínimo</th>
+            <th scope="col" class="number">Saldo</th>
+            <th scope="col" class="actions">Ações</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for produto in pagina %}
+            <tr>
+              <td>
+                <div class="product-cell">
+                  <span class="product-avatar" aria-hidden="true">
+                    {{ produto.nome|first|upper }}
+                  </span>
+                  <div>
+                    <strong>{{ produto.nome }}</strong>
+                    <span class="sku">{{ produto.codigo }}</span>
+                  </div>
+                </div>
+              </td>
+
+              <td>{{ produto.categoria|default:"—" }}</td>
+
+              <td>
+                <span class="unit-tag">{{ produto.unidade }}</span>
+              </td>
+
+              <td class="number nowrap">
+                R$ {{ produto.preco|floatformat:2 }}
+              </td>
+
+              <td class="number">{{ produto.estoque_minimo }}</td>
+              <td class="number">{{ produto.saldo }}</td>
+
+              <td class="actions">
+                <div class="row-actions">
+                  <a href="{% url 'estoque:produto_editar' produto.pk %}"
+                     class="action-link"
+                     aria-label="Editar {{ produto.nome }}">
+                    Editar
+                  </a>
+
+                  <a href="{% url 'estoque:produto_excluir' produto.pk %}"
+                     class="action-link danger-link"
+                     aria-label="Excluir {{ produto.nome }}">
+                    Excluir
+                  </a>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination">
+      <span>
+        Página {{ pagina.number }} de {{ pagina.paginator.num_pages }}
+      </span>
+
+      <div>
+        {% if pagina.has_previous %}
+          <a class="button button-small button-secondary"
+             href="?q={{ busca|urlencode }}&amp;page={{ pagina.previous_page_number }}">
+            Anterior
+          </a>
+        {% endif %}
+
+        {% if pagina.has_next %}
+          <a class="button button-small button-secondary"
+             href="?q={{ busca|urlencode }}&amp;page={{ pagina.next_page_number }}">
+            Próxima
+          </a>
+        {% endif %}
+      </div>
+    </div>
+
+  {% else %}
+    <div class="empty-state">
+      <span class="empty-icon" aria-hidden="true">□</span>
+
+      {% if busca %}
+        <h3>Nenhum produto encontrado</h3>
+        <p>Experimente outro nome, código ou categoria.</p>
+
+        <a class="button button-secondary"
+           href="{% url 'estoque:produto_listar' %}">
+          Ver todos os produtos
+        </a>
+      {% else %}
+        <h3>Seu catálogo começa aqui</h3>
+        <p>Cadastre o primeiro produto para organizar o seu estoque.</p>
+
+        <a class="button button-primary"
+           href="{% url 'estoque:produto_criar' %}">
+          Cadastrar primeiro produto
+        </a>
+      {% endif %}
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

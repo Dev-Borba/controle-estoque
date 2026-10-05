@@ -1,0 +1,76 @@
+{% extends "estoque/base.html" %}
+
+{% block title %}Excluir produto{% endblock %}
+
+{% block content %}
+<a class="back-link" href="{% url 'estoque:produto_listar' %}">
+  ← Voltar para produtos
+</a>
+
+<div class="page-heading">
+  <div>
+    <p class="eyebrow">CATÁLOGO DE PRODUTOS</p>
+    <h1>Excluir produto</h1>
+    <p class="subtitle">
+      Confira o item antes de confirmar a exclusão.
+    </p>
+  </div>
+</div>
+
+<section class="panel confirm-panel">
+  <div class="confirm-symbol" aria-hidden="true">!</div>
+
+  <h2>Remover este produto do catálogo?</h2>
+  <p class="confirm-description">
+    A exclusão remove os dados deste produto.
+  </p>
+
+  <dl class="product-details">
+    <div>
+      <dt>Produto</dt>
+      <dd>{{ produto.nome }}</dd>
+    </div>
+
+    <div>
+      <dt>Código / SKU</dt>
+      <dd>{{ produto.codigo }}</dd>
+    </div>
+
+    <div>
+      <dt>Categoria</dt>
+      <dd>{{ produto.categoria|default:"—" }}</dd>
+    </div>
+
+    <div>
+      <dt>Preço de referência</dt>
+      <dd>R$ {{ produto.preco|floatformat:2 }}</dd>
+    </div>
+  </dl>
+
+  {% if pode_excluir %}
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="confirm-actions">
+        <a class="button button-secondary"
+           href="{% url 'estoque:produto_listar' %}">
+          Cancelar
+        </a>
+
+        <button class="button button-danger" type="submit">
+          Confirmar exclusão
+        </button>
+      </div>
+    </form>
+  {% else %}
+    <div class="form-alert" role="alert">
+      Este produto possui saldo e não pode ser excluído.
+    </div>
+
+    <a class="button button-secondary"
+       href="{% url 'estoque:produto_listar' %}">
+      Voltar para produtos
+    </a>
+  {% endif %}
+</section>
+{% endblock %}
