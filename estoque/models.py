@@ -79,3 +79,43 @@ class Produto(models.Model):
 
     def __str__(self):
         return f"{self.codigo} — {self.nome}"
+class EntradaEstoque(models.Model):
+    produto = models.ForeignKey(
+        Produto,
+        on_delete=models.PROTECT,
+        related_name="entradas",
+        verbose_name="Produto",
+    )
+    quantidade = models.PositiveIntegerField(
+        "Quantidade recebida",
+        validators=[MinValueValidator(1)],
+        help_text="Informe uma quantidade inteira maior que zero.",
+    )
+    observacao = models.CharField(
+        "Observação",
+        max_length=255,
+        blank=True,
+        help_text="Opcional. Exemplo: Compra de mercadoria.",
+    )
+    criado_em = models.DateTimeField(
+        "Registrado em",
+        auto_now_add=True,
+    )
+
+    class Meta:
+        ordering = ["-criado_em", "-pk"]
+        verbose_name = "Entrada de estoque"
+        verbose_name_plural = "Entradas de estoque"
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(quantidade__gte=1),
+                name="estoque_entrada_quantidade_positiva",
+            ),
+        ]
+
+    def clean(self):
+        super().clean()
+        self.observacao = self.observacao.strip()
+
+    def __str__(self):
+        return f"{self.produto.codigo} — Entrada de {self.quantidade}"

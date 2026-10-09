@@ -24,13 +24,14 @@
                   stroke="currentColor" stroke-width="1.6"/>
           </svg>
         </span>
+
         <span>
           Controle
           <span class="brand-second">de Estoque</span>
         </span>
       </a>
 
-      <p class="nav-label">CATÁLOGO</p>
+      <p class="nav-label">GESTÃO DO ESTOQUE</p>
 
       <nav aria-label="Menu principal">
         <a class="nav-item"
@@ -48,6 +49,21 @@
           </svg>
           Produtos
         </a>
+
+        <a class="nav-item"
+           href="{% url 'estoque:entrada_listar' %}"
+           {% if request.resolver_match.url_name == 'entrada_listar' or request.resolver_match.url_name == 'entrada_criar' %}
+             aria-current="page"
+           {% endif %}>
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 3v12m-5-5 5 5 5-5M4 16v4h16v-4"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"/>
+          </svg>
+          Entradas
+        </a>
       </nav>
 
       <div class="sidebar-bottom">
@@ -58,7 +74,7 @@
 
     <div class="main-shell">
       <header class="topbar">
-        <span>Gestão do catálogo</span>
+        <span>Gestão do estoque</span>
         <span class="workspace-badge">Meu estoque</span>
       </header>
 

@@ -17,4 +17,14 @@ urlpatterns = [
         views.produto_excluir,
         name="produto_excluir",
     ),
+    path(
+        "entradas/",
+        views.entrada_listar,
+        name="entrada_listar",
+    ),
+    path(
+        "entradas/nova/",
+        views.entrada_criar,
+        name="entrada_criar",
+    ),
 ]
