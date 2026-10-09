@@ -27,4 +27,14 @@ urlpatterns = [
         views.entrada_criar,
         name="entrada_criar",
     ),
+    path(
+        "saidas/",
+        views.saida_listar,
+        name="saida_listar",
+    ),
+    path(
+        "saidas/nova/",
+        views.saida_criar,
+        name="saida_criar",
+    ),
 ]

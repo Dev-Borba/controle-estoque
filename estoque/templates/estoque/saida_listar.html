@@ -1,0 +1,182 @@
+{% extends "estoque/base.html" %}
+
+{% block title %}Saídas de estoque{% endblock %}
+
+{% block content %}
+<a class="back-link" href="{% url 'estoque:produto_listar' %}">
+  ← Voltar para produtos
+</a>
+
+<div class="page-heading">
+  <div>
+    <p class="eyebrow">MOVIMENTAÇÃO DE ESTOQUE</p>
+    <h1>Saídas de estoque</h1>
+    <p class="subtitle">
+      Consulte as retiradas realizadas e registre novas saídas.
+    </p>
+  </div>
+
+  <a class="button button-primary"
+     href="{% url 'estoque:saida_criar' %}">
+    <span aria-hidden="true">+</span>
+    Nova saída
+  </a>
+</div>
+
+<div class="catalog-summary">
+  <div class="summary-icon" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none">
+      <path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"
+            stroke="currentColor" stroke-width="1.6"/>
+      <path d="m4 7.5 8 4.5 8-4.5M12 12v9"
+            stroke="currentColor" stroke-width="1.6"/>
+    </svg>
+  </div>
+
+  <div>
+    <strong>{{ total_saidas }}</strong>
+    <span>
+      saída{{ total_saidas|pluralize:"s" }}
+      registrada{{ total_saidas|pluralize:"s" }}
+    </span>
+  </div>
+
+  <p>
+    Cada saída registrada diminui o saldo do produto correspondente.
+  </p>
+</div>
+
+<section class="panel" aria-labelledby="lista-titulo">
+  <div class="panel-toolbar">
+    <div>
+      <h2 id="lista-titulo">Histórico de saídas</h2>
+      <p>
+        {{ total_resultados }} resultado{{ total_resultados|pluralize:"s" }}
+        {% if busca %}para “{{ busca }}”{% endif %}
+      </p>
+    </div>
+
+    <form class="search" method="get">
+      <label class="sr-only" for="busca">Buscar saídas</label>
+
+      <input id="busca"
+             name="q"
+             type="search"
+             value="{{ busca }}"
+             maxlength="100"
+             placeholder="Produto, código ou observação">
+
+      <button class="button button-secondary" type="submit">
+        Buscar
+      </button>
+
+      {% if busca %}
+        <a class="text-link"
+           href="{% url 'estoque:saida_listar' %}">
+          Limpar
+        </a>
+      {% endif %}
+    </form>
+  </div>
+
+  {% if pagina.object_list %}
+    <div class="table-scroll"
+         role="region"
+         aria-label="Tabela de saídas de estoque"
+         tabindex="0">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Produto</th>
+            <th scope="col" class="number">Quantidade retirada</th>
+            <th scope="col">Unidade</th>
+            <th scope="col">Observação</th>
+            <th scope="col">Registrado em</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for saida in pagina %}
+            <tr>
+              <td>
+                <div class="product-cell">
+                  <span class="product-avatar" aria-hidden="true">
+                    {{ saida.produto.nome|first|upper }}
+                  </span>
+
+                  <div>
+                    <strong>{{ saida.produto.nome }}</strong>
+                    <span class="sku">{{ saida.produto.codigo }}</span>
+                  </div>
+                </div>
+              </td>
+
+              <td class="number">−{{ saida.quantidade }}</td>
+
+              <td>
+                <span class="unit-tag">
+                  {{ saida.produto.unidade }}
+                </span>
+              </td>
+
+              <td>{{ saida.observacao|default:"—" }}</td>
+
+              <td class="nowrap">
+                {{ saida.criado_em|date:"d/m/Y H:i" }}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination">
+      <span>
+        Página {{ pagina.number }} de {{ pagina.paginator.num_pages }}
+      </span>
+
+      <div>
+        {% if pagina.has_previous %}
+          <a class="button button-small button-secondary"
+             href="?q={{ busca|urlencode }}&amp;page={{ pagina.previous_page_number }}">
+            Anterior
+          </a>
+        {% endif %}
+
+        {% if pagina.has_next %}
+          <a class="button button-small button-secondary"
+             href="?q={{ busca|urlencode }}&amp;page={{ pagina.next_page_number }}">
+            Próxima
+          </a>
+        {% endif %}
+      </div>
+    </div>
+
+  {% else %}
+    <div class="empty-state">
+      <span class="empty-icon" aria-hidden="true">□</span>
+
+      {% if busca %}
+        <h3>Nenhuma saída encontrada</h3>
+        <p>Experimente outro produto, código ou observação.</p>
+
+        <a class="button button-secondary"
+           href="{% url 'estoque:saida_listar' %}">
+          Ver todas as saídas
+        </a>
+      {% else %}
+        <h3>Nenhuma saída registrada</h3>
+        <p>
+          Registre uma retirada de um produto com saldo disponível
+          para começar.
+        </p>
+
+        <a class="button button-primary"
+           href="{% url 'estoque:saida_criar' %}">
+          Registrar primeira saída
+        </a>
+      {% endif %}
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

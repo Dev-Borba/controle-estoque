@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import EntradaEstoque, Produto
+from .models import EntradaEstoque, Produto, SaidaEstoque
 
 
 class ProdutoForm(forms.ModelForm):
@@ -47,6 +47,49 @@ class EntradaEstoqueForm(forms.ModelForm):
             ),
             "observacao": forms.TextInput(
                 attrs={"placeholder": "Exemplo: Compra de mercadoria"},
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["produto"].empty_label = "Selecione um produto"
+
+        for name, field in self.fields.items():
+            field.widget.attrs["class"] = "form-control"
+            field.widget.attrs["aria-describedby"] = (
+                f"id_{name}_help id_{name}_errors"
+            )
+
+    def clean_quantidade(self):
+        quantidade = self.cleaned_data["quantidade"]
+
+        if quantidade <= 0:
+            raise forms.ValidationError(
+                "Informe uma quantidade maior que zero."
+            )
+
+        return quantidade
+
+    def clean_observacao(self):
+        return self.cleaned_data.get("observacao", "").strip()
+
+class SaidaEstoqueForm(forms.ModelForm):
+    class Meta:
+        model = SaidaEstoque
+        fields = ["produto", "quantidade", "observacao"]
+        widgets = {
+            "produto": forms.Select(),
+            "quantidade": forms.NumberInput(
+                attrs={
+                    "min": "1",
+                    "step": "1",
+                    "placeholder": "Exemplo: 5",
+                },
+            ),
+            "observacao": forms.TextInput(
+                attrs={
+                    "placeholder": "Exemplo: Venda de mercadoria",
+                },
             ),
         }
 

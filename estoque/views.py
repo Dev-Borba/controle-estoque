@@ -6,8 +6,8 @@ from django.db.models.deletion import ProtectedError
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_GET, require_http_methods
 
-from .forms import EntradaEstoqueForm, ProdutoForm
-from .models import EntradaEstoque, Produto
+from .forms import EntradaEstoqueForm, ProdutoForm, SaidaEstoqueForm
+from .models import EntradaEstoque, Produto, SaidaEstoque
 
 
 @require_GET
@@ -189,4 +189,93 @@ def entrada_listar(request):
         "busca": busca,
         "total_resultados": total_resultados,
         "total_entradas": EntradaEstoque.objects.count(),
+    })
+
+@require_http_methods(["GET", "POST"])
+def saida_criar(request):
+    form = SaidaEstoqueForm(
+        request.POST if request.method == "POST" else None,
+    )
+
+    if request.method == "POST" and form.is_valid():
+        produto_id = form.cleaned_data["produto"].pk
+        quantidade = form.cleaned_data["quantidade"]
+        saida_salva = False
+
+        try:
+            with transaction.atomic():
+                produto = (
+                    Produto.objects
+                    .select_for_update()
+                    .get(pk=produto_id)
+                )
+
+                if quantidade > produto.saldo:
+                    form.add_error(
+                        "quantidade",
+                        f"Estoque insuficiente. "
+                        f"Saldo disponível: {produto.saldo}.",
+                    )
+                else:
+                    novo_saldo = produto.saldo - quantidade
+
+                    saida = form.save(commit=False)
+                    saida.produto = produto
+                    saida.save()
+
+                    produto.saldo = novo_saldo
+                    produto.save(
+                        update_fields=["saldo", "atualizado_em"],
+                    )
+
+                    saida_salva = True
+
+        except Produto.DoesNotExist:
+            form.add_error(
+                "produto",
+                "Este produto foi excluído. Selecione outro produto.",
+            )
+        except IntegrityError:
+            form.add_error(
+                None,
+                "Não foi possível registrar a saída. "
+                "Confira os dados e tente novamente.",
+            )
+
+        if saida_salva:
+            messages.success(
+                request,
+                f"Saída de {quantidade} registrada para "
+                f"{produto.codigo}. Saldo atual: {novo_saldo}.",
+            )
+            return redirect("estoque:saida_listar")
+
+    return render(request, "estoque/saida_form.html", {
+        "form": form,
+        "titulo": "Nova saída de estoque",
+    })
+
+@require_GET
+def saida_listar(request):
+    busca = request.GET.get("q", "").strip()[:100]
+
+    saidas = SaidaEstoque.objects.select_related("produto")
+
+    if busca:
+        saidas = saidas.filter(
+            Q(produto__codigo__icontains=busca)
+            | Q(produto__nome__icontains=busca)
+            | Q(observacao__icontains=busca)
+        )
+
+    total_resultados = saidas.count()
+    pagina = Paginator(saidas, 15).get_page(
+        request.GET.get("page"),
+    )
+
+    return render(request, "estoque/saida_listar.html", {
+        "pagina": pagina,
+        "busca": busca,
+        "total_resultados": total_resultados,
+        "total_saidas": SaidaEstoque.objects.count(),
     })
